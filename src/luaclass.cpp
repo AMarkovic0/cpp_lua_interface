@@ -1,6 +1,6 @@
 #include "luaclass.hpp"
 
-LuaFile::LuaFile(std::string fileName, luaTypenameMap_t outTypes)
+LuaFile::LuaFile(std::string fileName, luaTypeList_t outTypes)
 {
 	this->fileName = fileName;
 	this->outArgNum = outTypes.size();
@@ -18,9 +18,11 @@ Lua::Lua(bool debug = DEBUG_MODE_OFF)
 
 Lua::~Lua()
 {
+	dbg("Destroying all object in the Lua state. Closing Lua state.");
+	lua_close(this->L);
 }
 
-bool Lua::registerFile(std::string fileName, luaTypenameMap_t outTypes)
+bool Lua::registerFile(std::string fileName, luaTypeList_t outTypes)
 {
 	this->files[fileName] = new LuaFile(fileName, outTypes);
 }
@@ -39,6 +41,8 @@ bool Lua::regFunction(const char* funName,
 
 void Lua::exefile(std::string fileName, ...)
 {
+	std::va_list valist;
+
 	LuaFile* file = this->files.find(fileName)->second;
 	if(0 == luaL_dofile(this->L, fileName.c_str()))
 	{
@@ -49,9 +53,61 @@ void Lua::exefile(std::string fileName, ...)
 		this->dbg("File execution failed");
 	}
 
+	va_start(valist, fileName);
+	file->outTypesIt = file->outTypes.begin();
 	for(int cnt = -(file->outArgNum); cnt < 0; cnt++)
 	{
-		std::cout << lua_tonumber(this->L, cnt) << std::endl;
+		std::advance(file->outTypesIt, cnt + file->outArgNum);
+		this->_getVar(cnt, valist, *(file->outTypesIt));
+		file->outTypesIt = file->outTypes.begin();
+	}
+	va_end(valist);
+}
+
+void Lua::_getVar(int position, std::va_list& valist, luatype_t type)
+{
+	if(lua_isnumber(this->L, position) || lua_isboolean (this->L, position))
+	{
+		if(type == INT)
+		{
+			*(va_arg(valist, int*)) = lua_tonumber(this->L, position);
+			return;
+		}
+		if(type == FLOAT)
+		{
+			*(va_arg(valist, float*)) = lua_tonumber(this->L, position);
+			return;
+		}
+		if(type == DOUBLE)
+		{
+			*(va_arg(valist, double*)) = lua_tonumber(this->L, position);
+			return;
+		}
+	}
+	if(lua_isfunction(this->L, position))
+	{
+		// Not implemented
+	}
+	if(lua_isnoneornil(this->L, position))
+	{
+		dbg("None or Nil value read from the Lua stack.");
+		return;
+	}
+	if(lua_isstring(this->L, position))
+	{
+		return;
+	}
+	if(lua_istable(this->L, position))
+	{
+		return;
+	}
+	if(lua_isthread(this->L, position))
+	{
+		// Not implemented
+	}
+	if(!lua_isuserdata(this->L, position))
+	{
+		// Not implemented
 	}
 }
 

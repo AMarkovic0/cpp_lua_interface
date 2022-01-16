@@ -3,21 +3,21 @@
 
 #include<lua.hpp>
 #include<iostream>
+#include<cstdarg>
 #include<map>
+#include<list>
 
 #define DEBUG_MODE_ON 1
 #define DEBUG_MODE_OFF 0
 
 typedef enum luaTypes
 {
-	NUMBER = 1,
-	STRING = 2,
-	TABLE = 3,
-	FUNCTION = 4
+	INT = 1,
+	FLOAT = 2,
+	DOUBLE = 3,
+	STRING = 4,
+	BOOLEAN = 5
 }luatype_t;
-
-typedef std::pair<std::string, luatype_t> luaTypenamePair_t; // Names vs types
-typedef std::map<std::string, luatype_t> luaTypenameMap_t;
 
 class Helper
 {
@@ -29,15 +29,17 @@ class Helper
 	void dbg(const char* str);
 };
 
+typedef std::list<luatype_t> luaTypeList_t;
+
 class LuaFile
 {
 	public:
 	std::string fileName;
 	size_t outArgNum;
-	luaTypenameMap_t outTypes;
-	luaTypenameMap_t::iterator outTypesIt;
+	luaTypeList_t outTypes;
+	luaTypeList_t::iterator outTypesIt;
 
-	LuaFile(std::string fileName, luaTypenameMap_t outTypes);
+	LuaFile(std::string fileName, luaTypeList_t outTypes);
 };
 
 typedef std::pair<std::string, LuaFile*> luaFileNamePair_t;  // File Name vs File Instance
@@ -50,11 +52,13 @@ class Lua: protected Helper
 	luaFilenameMap_t files;
 	luaFilenameMap_t::iterator filesIt;
 
+	void _getVar(int position, std::va_list& valist, luatype_t type);
+
 	public:
 	Lua(bool debug);
 	virtual ~Lua();
 
-	bool registerFile(std::string fileName, luaTypenameMap_t outTypes);
+	bool registerFile(std::string fileName, luaTypeList_t outTypes);
 	bool registerVar(const char* varName, luatype_t varType);
 	bool regFunction(const char* funName,
 			size_t inArgNum,
@@ -63,6 +67,7 @@ class Lua: protected Helper
 			luatype_t outTypes[]);
 
 	void exefile(std::string fileName, ...);
+	void getVar();
 	void execfun();
 
 	protected:
