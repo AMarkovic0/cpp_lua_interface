@@ -29,6 +29,7 @@ bool Lua::registerFile(std::string fileName, luaTypeList_t outTypes)
 
 bool Lua::registerVar(const char* varName, luatype_t varType)
 {
+
 }
 
 bool Lua::regFunction(const char* funName,
@@ -58,13 +59,13 @@ void Lua::exefile(std::string fileName, ...)
 	for(int cnt = -(file->outArgNum); cnt < 0; cnt++)
 	{
 		std::advance(file->outTypesIt, cnt + file->outArgNum);
-		this->_getVar(cnt, valist, *(file->outTypesIt));
+		this->_getFileVar(cnt, valist, *(file->outTypesIt));
 		file->outTypesIt = file->outTypes.begin();
 	}
 	va_end(valist);
 }
 
-void Lua::_getVar(int position, std::va_list& valist, luatype_t type)
+void Lua::_getFileVar(int position, std::va_list& valist, luatype_t type)
 {
 	if(lua_isnumber(this->L, position) || lua_isboolean (this->L, position))
 	{

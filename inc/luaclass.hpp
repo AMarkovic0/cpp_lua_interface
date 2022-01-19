@@ -52,7 +52,8 @@ class Lua: protected Helper
 	luaFilenameMap_t files;
 	luaFilenameMap_t::iterator filesIt;
 
-	void _getVar(int position, std::va_list& valist, luatype_t type);
+	// This function is used just to get variable in case of multiple return arguments
+	void _getFileVar(int position, std::va_list& valist, luatype_t type);
 
 	public:
 	Lua(bool debug);
@@ -67,7 +68,44 @@ class Lua: protected Helper
 			luatype_t outTypes[]);
 
 	void exefile(std::string fileName, ...);
-	void getVar();
+	template<class T> void getVar(std::string varName, T& ret)
+	{
+		int position = -1;
+		lua_getglobal(this->L, varName.c_str());
+		if(lua_isnumber(this->L, position) || lua_isboolean (this->L, position))
+		{
+			this->dbg("Getting lua number from the stack");
+			ret = lua_tonumber(this->L, position);
+			return;
+		}
+		if(lua_isfunction(this->L, position))
+		{
+			// Not implemented
+		}
+		if(lua_isnoneornil(this->L, position))
+		{
+			dbg("None or Nil value read from the Lua stack.");
+			return;
+		}
+		if(lua_isstring(this->L, position))
+		{
+			return;
+		}
+		if(lua_istable(this->L, position))
+		{
+			return;
+		}
+		if(lua_isthread(this->L, position))
+		{
+			// Not implemented
+		}
+		if(!lua_isuserdata(this->L, position))
+		{
+			// Not implemented
+		}
+	}
+
+
 	void execfun();
 
 	protected:
