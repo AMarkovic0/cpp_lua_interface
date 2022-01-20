@@ -7,6 +7,15 @@ LuaFile::LuaFile(std::string fileName, luaTypeList_t outTypes)
 	this->outTypes = outTypes;
 }
 
+LuaFun::LuaFun(std::string funName, luaTypeList_t inTypes, luaTypeList_t outTypes)
+{
+	this->funName = funName;
+	this->inArgNum = inTypes.size();
+	this->outArgNum = outTypes.size();
+	this->inTypes = inTypes;
+	this->outTypes = outTypes;
+}
+
 Lua::Lua(bool debug = DEBUG_MODE_OFF)
 {
 	this->setDbgMode(debug);
@@ -27,45 +36,81 @@ bool Lua::registerFile(std::string fileName, luaTypeList_t outTypes)
 	this->files[fileName] = new LuaFile(fileName, outTypes);
 }
 
-bool Lua::registerVar(const char* varName, luatype_t varType)
+bool Lua::registerFunction(std::string funName, luaTypeList_t inTypes, luaTypeList_t outTypes)
 {
-
+	this->functions[funName] = new LuaFun(funName, inTypes, outTypes);
 }
 
-bool Lua::regFunction(const char* funName,
-			size_t inArgNum,
-			size_t outArgNum,
-			luatype_t inTypes[],
-			luatype_t outTypes[])
-{
-}
-
-void Lua::exefile(std::string fileName, ...)
+int Lua::exeFile(std::string fileName, ...)
 {
 	std::va_list valist;
 
+	// Execute
 	LuaFile* file = this->files.find(fileName)->second;
-	if(0 == luaL_dofile(this->L, fileName.c_str()))
+	if(EXIT_SUCCESS == luaL_dofile(this->L, fileName.c_str()))
 	{
 		this->dbg("File has been executed.");
 	}
 	else
 	{
 		this->dbg("File execution failed");
+		return lua_tonumber(this->L, -1); // Getting error message
 	}
 
+	// Get output arguments
 	va_start(valist, fileName);
 	file->outTypesIt = file->outTypes.begin();
 	for(int cnt = -(file->outArgNum); cnt < 0; cnt++)
 	{
 		std::advance(file->outTypesIt, cnt + file->outArgNum);
-		this->_getFileVar(cnt, valist, *(file->outTypesIt));
+		this->_getVar(cnt, valist, *(file->outTypesIt));
 		file->outTypesIt = file->outTypes.begin();
 	}
 	va_end(valist);
+	return EXIT_SUCCESS;
 }
 
-void Lua::_getFileVar(int position, std::va_list& valist, luatype_t type)
+int Lua::exeFun(std::string funName, ...)
+{
+	std::va_list valist;
+
+	LuaFun* function = this->functions.find(funName)->second;
+	lua_getglobal(L, funName.c_str()); // Push the function to the Lua stack
+
+	// Push input arguments
+	va_start(valist, funName);
+	function->inTypesIt = function->inTypes.begin();
+	for(int cnt = 0; cnt < function->inArgNum; cnt++)
+	{
+		std::advance(function->inTypesIt, cnt);
+		this->_setVar(valist, *(function->inTypesIt));
+		function->inTypesIt = function->inTypes.begin();
+	}
+
+	// Execute
+	if(EXIT_SUCCESS == lua_pcall(L, function->inArgNum, function->outArgNum, 0))
+	{
+		this->dbg("Function has been executed.");
+	}
+	else
+	{
+		this->dbg("Function execution failed.");
+		return lua_tonumber(this->L, -1); // Getting error message
+	}
+
+	// Get output arguments
+	function->outTypesIt = function->outTypes.begin();
+	for(int cnt = -(function->outArgNum); cnt < 0; cnt++)
+	{
+		std::advance(function->outTypesIt, cnt + function->outArgNum);
+		this->_getVar(cnt, valist, *(function->outTypesIt));
+		function->outTypesIt = function->outTypes.begin();
+	}
+	va_end(valist);
+	return EXIT_SUCCESS;
+}
+
+void Lua::_getVar(int position, std::va_list& valist, luatype_t type)
 {
 	if(lua_isnumber(this->L, position) || lua_isboolean (this->L, position))
 	{
@@ -111,6 +156,36 @@ void Lua::_getFileVar(int position, std::va_list& valist, luatype_t type)
 		// Not implemented
 	}
 }
+
+
+void Lua::_setVar(std::va_list& valist, luatype_t type)
+{
+	if(type == INT)
+	{
+		lua_pushnumber(L, *(va_arg(valist, int*)));
+		return;
+	}
+	if(type == FLOAT)
+	{
+		lua_pushnumber(L, *(va_arg(valist, float*)));
+		return;
+	}
+	if(type == DOUBLE)
+	{
+		lua_pushnumber(L, *(va_arg(valist, double*)));
+		return;
+	}
+	if(type == STRING)
+	{
+		return;
+	}
+	if(type == BOOLEAN)
+	{
+		return;
+	}
+}
+
+
 
 void Helper::setDbgMode(bool onOff)
 {
