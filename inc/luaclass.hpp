@@ -6,9 +6,15 @@
 #include<cstdarg>
 #include<map>
 #include<list>
+#include <type_traits>
 
 #define DEBUG_MODE_ON 1
 #define DEBUG_MODE_OFF 0
+#define LUA_OK 0
+#define LUA_FAILED 1
+
+#define TOP_OF_THE_STACK -1
+#define EMPTY_STRING std::string("")
 
 typedef enum luaTypes
 {
@@ -84,42 +90,44 @@ class Lua: protected Helper
 
 	int exeFile(std::string fileName, ...);
 	int exeFun(std::string funName, ...);
-	template<class T> void getVar(std::string varName, T& ret)
+	bool getVar(std::string varName, std::string& ret, int position = TOP_OF_THE_STACK);
+	bool getVar(std::string varName, lua_CFunction& ret, int position = TOP_OF_THE_STACK);
+	bool getVar(std::string varName, lua_State* ret, int position = TOP_OF_THE_STACK);
+	bool getVar(std::string varName, bool& ret, int position = TOP_OF_THE_STACK);
+	template<class T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
+	bool getVar(std::string varName, T& ret, int position = TOP_OF_THE_STACK)
 	{
-		int position = -1;
-		lua_getglobal(this->L, varName.c_str());
+		if(TOP_OF_THE_STACK == position)
+			lua_getglobal(this->L, varName.c_str());
 		if(lua_isnumber(this->L, position) || lua_isboolean (this->L, position))
 		{
 			this->dbg("Getting lua number from the stack");
 			ret = lua_tonumber(this->L, position);
-			return;
-		}
-		if(lua_isfunction(this->L, position))
-		{
-			// Not implemented
-		}
-		if(lua_isnoneornil(this->L, position))
-		{
-			dbg("None or Nil value read from the Lua stack.");
-			return;
-		}
-		if(lua_isstring(this->L, position))
-		{
-			return;
+			return LUA_OK;
 		}
 		if(lua_istable(this->L, position))
 		{
-			return;
-		}
-		if(lua_isthread(this->L, position))
-		{
-			// Not implemented
+			return LUA_FAILED;
 		}
 		if(!lua_isuserdata(this->L, position))
 		{
 			// Not implemented
 		}
+		this->dbg("Lua stack does not contain number on the top. Can not get variable.");
+		return LUA_FAILED;
 	}
+	template<class T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
+	void setVar(std::string varName, T& set)
+	{
+		this->dbg("Pushing number on the stack.");
+		lua_pushnumber(this->L, set);
+		if(0 != varName.size())
+			lua_setglobal(this->L, varName.c_str());
+		return;
+	}
+	void setVar(std::string varName, std::string& set);
+	void setVar(std::string varName, lua_CFunction set);
+	void setVar(std::string varName, bool& set);
 
 	protected:
 };

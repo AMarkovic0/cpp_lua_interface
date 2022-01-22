@@ -54,7 +54,7 @@ int Lua::exeFile(std::string fileName, ...)
 	else
 	{
 		this->dbg("File execution failed");
-		return lua_tonumber(this->L, -1); // Getting error message
+		return lua_tonumber(this->L, TOP_OF_THE_STACK); // Getting error message
 	}
 
 	// Get output arguments
@@ -95,7 +95,7 @@ int Lua::exeFun(std::string funName, ...)
 	else
 	{
 		this->dbg("Function execution failed.");
-		return lua_tonumber(this->L, -1); // Getting error message
+		return lua_tonumber(this->L, TOP_OF_THE_STACK); // Getting error message
 	}
 
 	// Get output arguments
@@ -108,6 +108,89 @@ int Lua::exeFun(std::string funName, ...)
 	}
 	va_end(valist);
 	return EXIT_SUCCESS;
+}
+
+bool Lua::getVar(std::string varName, std::string& ret, int position)
+{
+	if (0 != varName.size())
+		lua_getglobal(this->L, varName.c_str());
+	if(lua_isstring(this->L, position))
+	{
+		this->dbg("Getting lua string from the stack");
+		ret = std::string(lua_tolstring(this->L, position, NULL));
+		return LUA_OK;
+	}
+	this->dbg("Lua stack does not contain string on the top. Can not get variable.");
+	return LUA_FAILED;
+}
+
+bool Lua::getVar(std::string varName, lua_CFunction& ret, int position)
+{
+	if(0 != varName.size())
+		lua_getglobal(this->L, varName.c_str());
+	if(lua_iscfunction(this->L, position))
+	{
+		this->dbg("Getting lua C function from the stack");
+		ret = lua_tocfunction(this->L, position);
+		return LUA_OK;
+	}
+	this->dbg("Lua stack does not contain C function on the top. Can not get variable.");
+	return LUA_FAILED;
+}
+
+bool Lua::getVar(std::string varName, lua_State* ret, int position)
+{
+	if(0 != varName.size())
+		lua_getglobal(this->L, varName.c_str());
+	if(lua_isthread(this->L, position))
+	{
+		this->dbg("Getting lua thread from the stack");
+		ret = lua_tothread(this->L, position);
+		return LUA_OK;
+	}
+	this->dbg("Lua stack does not contain thread on the top. Can not get variable.");
+	return LUA_FAILED;
+}
+
+bool Lua::getVar(std::string varName, bool& ret, int position)
+{
+	if(0 != varName.size())
+		lua_getglobal(this->L, varName.c_str());
+	if(lua_isboolean(this->L, position) || lua_isnoneornil(this->L, position))
+	{
+		this->dbg("Getting lua boolean from the stack");
+		ret = lua_toboolean(this->L, position);
+		return LUA_OK;
+	}
+	this->dbg("Lua stack does not contain boolean on the top. Can not get variable.");
+	return LUA_FAILED;
+}
+
+void Lua::setVar(std::string varName, std::string& set)
+{
+	this->dbg("Pushing string on the stack.");
+	lua_pushstring(this->L, set.c_str());
+	if(0 != varName.size())
+		lua_setglobal(this->L, varName.c_str());
+	return;
+}
+
+void Lua::setVar(std::string varName, lua_CFunction set)
+{
+	this->dbg("Pushing C function on the stack.");
+	lua_pushcfunction(this->L, set); // Check how it is done
+	if(0 != varName.size())
+		lua_setglobal(this->L, varName.c_str());
+	return;
+}
+
+void Lua::setVar(std::string varName, bool& set)
+{
+	this->dbg("Pushing boolean on the stack.");
+	lua_pushboolean(this->L, set);
+        if(0 != varName.size())
+		lua_setglobal(this->L, varName.c_str());
+	return;
 }
 
 void Lua::_getVar(int position, std::va_list& valist, luatype_t type)
@@ -157,7 +240,6 @@ void Lua::_getVar(int position, std::va_list& valist, luatype_t type)
 	}
 }
 
-
 void Lua::_setVar(std::va_list& valist, luatype_t type)
 {
 	if(type == INT)
@@ -185,8 +267,6 @@ void Lua::_setVar(std::va_list& valist, luatype_t type)
 	}
 }
 
-
-
 void Helper::setDbgMode(bool onOff)
 {
 	if(onOff)
@@ -202,5 +282,5 @@ void Helper::setDbgMode(bool onOff)
 void Helper::dbg(const char* str)
 {
 	if(this->luaDebug)
-		std::cout << str << std::endl;
+		std::cout << "DEBUG: " << str << std::endl;
 }
