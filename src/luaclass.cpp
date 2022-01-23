@@ -44,6 +44,7 @@ bool Lua::registerFunction(std::string funName, luaTypeList_t inTypes, luaTypeLi
 int Lua::exeFile(std::string fileName, ...)
 {
 	std::va_list valist;
+	int res;
 
 	// Execute
 	LuaFile* file = this->files.find(fileName)->second;
@@ -54,7 +55,9 @@ int Lua::exeFile(std::string fileName, ...)
 	else
 	{
 		this->dbg("File execution failed");
-		return lua_tonumber(this->L, TOP_OF_THE_STACK); // Getting error message
+		res = lua_tonumber(this->L, TOP_OF_THE_STACK); // Getting error message
+		lua_settop (this->L, CLEAN_THE_STACK);
+		return res;
 	}
 
 	// Get output arguments
@@ -73,6 +76,7 @@ int Lua::exeFile(std::string fileName, ...)
 int Lua::exeFun(std::string funName, ...)
 {
 	std::va_list valist;
+	int res;
 
 	LuaFun* function = this->functions.find(funName)->second;
 	lua_getglobal(L, funName.c_str()); // Push the function to the Lua stack
@@ -95,7 +99,9 @@ int Lua::exeFun(std::string funName, ...)
 	else
 	{
 		this->dbg("Function execution failed.");
-		return lua_tonumber(this->L, TOP_OF_THE_STACK); // Getting error message
+		res = lua_tonumber(this->L, TOP_OF_THE_STACK); // Getting error message
+		lua_settop (this->L, CLEAN_THE_STACK);
+		return res;
 	}
 
 	// Get output arguments
@@ -166,6 +172,11 @@ bool Lua::getVar(std::string varName, bool& ret, int position)
 	return LUA_FAILED;
 }
 
+void Lua::getTable(std::string tableName)
+{
+	lua_getglobal(this->L, tableName.c_str());
+}
+
 void Lua::setVar(std::string varName, std::string& set)
 {
 	this->dbg("Pushing string on the stack.");
@@ -188,9 +199,23 @@ void Lua::setVar(std::string varName, bool& set)
 {
 	this->dbg("Pushing boolean on the stack.");
 	lua_pushboolean(this->L, set);
-        if(0 != varName.size())
+	if(0 != varName.size())
 		lua_setglobal(this->L, varName.c_str());
 	return;
+}
+
+void Lua::makeTable(std::string tableName)
+{
+	this->dbg("Table has been made.");
+	lua_newtable(this->L);
+	if(0 != tableName.size())
+		lua_setglobal(this->L, tableName.c_str());
+	return;
+}
+
+void Lua::setGlobalTable(std::string tableName)
+{
+	lua_setglobal(this->L, tableName.c_str());
 }
 
 void Lua::_getVar(int position, std::va_list& valist, luatype_t type)
@@ -270,13 +295,9 @@ void Lua::_setVar(std::va_list& valist, luatype_t type)
 void Helper::setDbgMode(bool onOff)
 {
 	if(onOff)
-	{
 		this->luaDebug = DEBUG_MODE_ON;
-	}
 	else
-	{
 		this->luaDebug = DEBUG_MODE_OFF;
-	}
 }
 
 void Helper::dbg(const char* str)

@@ -14,6 +14,7 @@
 #define LUA_FAILED 1
 
 #define TOP_OF_THE_STACK -1
+#define CLEAN_THE_STACK 0
 #define EMPTY_STRING std::string("")
 
 typedef enum luaTypes
@@ -70,7 +71,6 @@ typedef std::map<std::string, LuaFun*> luaFunctionNameMap_t;
 class Lua: protected Helper
 {
 	private:
-	lua_State *L;
 	luaFileNameMap_t files;
 	luaFileNameMap_t::iterator filesIt;
 	luaFunctionNameMap_t functions;
@@ -82,6 +82,7 @@ class Lua: protected Helper
 	void _setVar(std::va_list& valist, luatype_t type);
 
 	public:
+	lua_State *L;
 	Lua(bool debug);
 	virtual ~Lua();
 
@@ -97,7 +98,7 @@ class Lua: protected Helper
 	template<class T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
 	bool getVar(std::string varName, T& ret, int position = TOP_OF_THE_STACK)
 	{
-		if(TOP_OF_THE_STACK == position)
+		if(0 != varName.size())
 			lua_getglobal(this->L, varName.c_str());
 		if(lua_isnumber(this->L, position) || lua_isboolean (this->L, position))
 		{
@@ -105,16 +106,20 @@ class Lua: protected Helper
 			ret = lua_tonumber(this->L, position);
 			return LUA_OK;
 		}
-		if(lua_istable(this->L, position))
-		{
-			return LUA_FAILED;
-		}
 		if(!lua_isuserdata(this->L, position))
 		{
 			// Not implemented
 		}
 		this->dbg("Lua stack does not contain number on the top. Can not get variable.");
 		return LUA_FAILED;
+	}
+	void getTable(std::string tableName);
+	template<class T, class U> void getTableValue(T key, U& val)
+	{
+		this->setVar(EMPTY_STRING, key);
+		lua_gettable(this->L, -2);
+		this->getVar(EMPTY_STRING, val);
+		lua_settop(this->L, -2);
 	}
 	template<class T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
 	void setVar(std::string varName, T& set)
@@ -128,6 +133,14 @@ class Lua: protected Helper
 	void setVar(std::string varName, std::string& set);
 	void setVar(std::string varName, lua_CFunction set);
 	void setVar(std::string varName, bool& set);
+	void makeTable(std::string tableName = EMPTY_STRING);
+	template<class T, class U> void insertTable(T key, U val)
+	{
+		this->setVar(EMPTY_STRING, key);
+		this->setVar(EMPTY_STRING, val);
+		lua_settable(this->L, -3);
+	}
+	void setGlobalTable(std::string tableName);
 
 	protected:
 };
