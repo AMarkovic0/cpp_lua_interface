@@ -10,6 +10,7 @@
 #define TABLE_NAME "tb1"
 #define TABLE_SIZE 5
 
+// Lua C functions
 int add(lua_State *L);
 int tb(lua_State *L);
 
@@ -27,23 +28,29 @@ int main(int argc, char* argv[])
 
 	std::string key[] = {"KEY1", "KEY2", "KEY3", "KEY4", "KEY5"};
 
+	// Lua files and functions have to be registered before use
 	my_luavar.registerFile(LUA_FILE, {INT, FLOAT, FLOAT});
 	my_luavar.registerFunction(LUA_FUNCTION_NAME, {INT, FLOAT}, {FLOAT});
 
+	// Setting global C functions in Lua
 	my_luavar.setVar(std::string("add"), add);
 	my_luavar.setVar(std::string("tb"), tb);
 
+	// Setting global table in Lua
 	my_luavar.makeTable();
 	for(int i = 0; i < TABLE_SIZE; i++)
 		my_luavar.insertTable(key[i], i);
 	my_luavar.setGlobalTable(std::string(TABLE_NAME));
 
+	// Execute file
 	if(EXIT_SUCCESS == my_luavar.exeFile(LUA_FILE, &var1, &var2, &var3))
 		std::cout << "C++ : " << "Var1 = " << var1 << " Var2 = " << var2 << " Var3 = " << var3 <<std::endl;
 
+	// Execute function
 	if(EXIT_SUCCESS == my_luavar.exeFun(LUA_FUNCTION_NAME, &var1, &var2, &var3))
 		std::cout << "C++ : " << "Var1 = " << var1 << " Var2 = " << var2 << " Var1 + Var2 = " << var3 <<std::endl;
 
+	// Get global variables from Lua
 	my_luavar.getVar(std::string(VAR_X_NAME), x);
 	std::cout << "C++ : " << "X = " << x << std::endl;
 	my_luavar.getVar(std::string(VAR_Y_NAME), y);
@@ -51,6 +58,7 @@ int main(int argc, char* argv[])
 	my_luavar.getVar(std::string(VAR_Z_NAME), z);
 	std::cout << "C++ : " << "Z = " << z << std::endl;
 
+	// Get global table from Lua
 	int a = 0;
 	my_luavar.getTable(TABLE_NAME);
 	for(int i = 0; i < 3; i++)
@@ -62,6 +70,7 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
+// Function for add operation
 int add(lua_State *L)
 {
         double n1;
@@ -77,6 +86,7 @@ int add(lua_State *L)
         return 1; // Number of returned values
 }
 
+// This function sets table as function argument
 int tb(lua_State *L)
 {
 	my_luavar.makeTable();

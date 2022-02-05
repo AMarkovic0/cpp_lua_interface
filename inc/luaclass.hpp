@@ -76,9 +76,9 @@ class Lua: protected Helper
 	luaFunctionNameMap_t functions;
 	luaFunctionNameMap_t::iterator functionsIt;
 
-	// This function is used just to get variable in case of multiple return arguments
+	// This function is used just to get variable in the case of multiple return arguments
 	void _getVar(int position, std::va_list& valist, luatype_t type);
-	// This function is used just to set variable in case of multiple return arguments
+	// This function is used just to set variable in the case of multiple input arguments
 	void _setVar(std::va_list& valist, luatype_t type);
 
 	public:
