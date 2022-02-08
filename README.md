@@ -23,9 +23,9 @@ This chapter shortly explains how to use the library.
 
 Contrutctor will create the class instance, create Lua stack and setup debug mode. Constructor argument is boolean, you can use the macro like on the example below.
 
-`
-Lua my_luavar(DEBUG_MODE_OFF);
-`
+
+	Lua my_luavar(DEBUG_MODE_OFF);
+
 
 ### Registration
 
@@ -42,33 +42,31 @@ Enummeated just like above in the enum `luatype_t`.
 
 Following code gives an example how to register a file and a function:
 
-`
-// Lua files and functions have to be registered before use
-my_luavar.registerFile(LUA_FILE_NAME, {INT, FLOAT, FLOAT});
-my_luavar.registerFunction(LUA_FUNCTION_NAME, {INT, FLOAT}, {FLOAT});
 
-`
+	// Lua files and functions have to be registered before use
+	my_luavar.registerFile(LUA_FILE_NAME, {INT, FLOAT, FLOAT});
+	my_luavar.registerFunction(LUA_FUNCTION_NAME, {INT, FLOAT}, {FLOAT});
+
+
 
 ### Execute file/function
 
 After file/function has been registered, it can be executed as part of the C++ program.
 Following code gives an example how to execute previously registered file/function.
 
-`
-int var1 = 0;
-float var2 = 0;
-float var3 = 0;
+	int var1 = 0;
+	float var2 = 0;
+	float var3 = 0;
 
-// Execute file
-if(EXIT_SUCCESS == my_luavar.exeFile(LUA_FILE_NAME, &var1, &var2, &var3))
-	std::cout << "C++ : "
-	<< "Var1 = " << var1 << " Var2 = " << var2 << " Var3 = " << var3 <<std::endl;
+	// Execute file
+	if(EXIT_SUCCESS == my_luavar.exeFile(LUA_FILE_NAME, &var1, &var2, &var3))
+		std::cout << "C++ : "
+		<< "Var1 = " << var1 << " Var2 = " << var2 << " Var3 = " << var3 <<std::endl;
 
-// Execute function
-if(EXIT_SUCCESS == my_luavar.exeFun(LUA_FUNCTION_NAME, &var1, &var2, &var3))
-	std::cout << "C++ : "
-	<< "Var1 = " << var1 << " Var2 = " << var2 << " Var1 + Var2 = " << var3 <<std::endl;
-`
+	// Execute function
+	if(EXIT_SUCCESS == my_luavar.exeFun(LUA_FUNCTION_NAME, &var1, &var2, &var3))
+		std::cout << "C++ : "
+		<< "Var1 = " << var1 << " Var2 = " << var2 << " Var1 + Var2 = " << var3 <<std::endl;
 
 ### Setting variable
 
@@ -78,47 +76,41 @@ Global variable can be set using the `Lua::setVar` function. This function enabl
 - Value - value of the variable. Types supported:
 	- Arithmetic cabable types
 	- String
-	- luaC_Function
+	- luaC\_Function
 	- boolean
 
 Following code gives an example, how to push variable to Lua:
 
-`
-// Function for add operation
-int add(lua_State *L)
-{
-        double n1;
-        double n2;
-	double res;
+	// Function for add operation
+	int add(lua_State *L)
+	{
+		double n1;
+		double n2;
+		double res;
 
-	// Following lines will get non-global variable from the 1st and 2nd place on the stack:
-	my_luavar.getVar(EMPTY_STRING, n1, 1);
-	my_luavar.getVar(EMPTY_STRING, n2, 2);
+		// Following lines will get non-global variable from the 1st and 2nd place on the stack:
+		my_luavar.getVar(EMPTY_STRING, n1, 1);
+		my_luavar.getVar(EMPTY_STRING, n2, 2);
 
-	res = n1 + n2;
-        my_luavar.setVar(EMPTY_STRING, res);
+		res = n1 + n2;
+		my_luavar.setVar(EMPTY_STRING, res);
 
-        return 1; // Number of returned values
-}
+		return 1; // Number of returned values
+	}
 
-// Setting global C function in Lua
-my_luavar.setVar(std::string("add"), add);
-
-`
+	// Setting global C function in Lua
+	my_luavar.setVar(std::string("add"), add);
 
 ### Getting variable
 
 We can get Lua variables using the `Lua::getVar` function. This function can get simple variables from the Lua stack. Tis function is not used to get tables, there is another function for that.
 
-Following code gives and example, how to get variables from the Lua stack:
+Following code gives an example how to get variables from the Lua stack:
 
-`
-// Get global variables from Lua
-my_luavar.getVar(std::string(VAR_X_NAME), x);
-std::cout << "C++ : " << "X = " << x << std::endl;
-my_luavar.getVar(std::string(VAR_Y_NAME), y);
-std::cout << "C++ : " << "Y = " << y << std::endl;
-my_luavar.getVar(std::string(VAR_Z_NAME), z);
-std::cout << "C++ : " << "Z = " << z << std::endl;
-
-`
+	// Get global variables from Lua
+	my_luavar.getVar(std::string(VAR_X_NAME), x);
+	std::cout << "C++ : " << "X = " << x << std::endl;
+	my_luavar.getVar(std::string(VAR_Y_NAME), y);
+	std::cout << "C++ : " << "Y = " << y << std::endl;
+	my_luavar.getVar(std::string(VAR_Z_NAME), z);
+	std::cout << "C++ : " << "Z = " << z << std::endl;
