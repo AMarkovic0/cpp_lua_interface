@@ -6,7 +6,7 @@ SRCDIR = ./src/
 INCDIRS = /usr/include/lua5.1 ./inc/
 LIBDIRS = /usr/bin/
 
-SRCFILES = luaclass.cpp
+SRCFILES = luaclass.cpp luahelper.cpp
 
 SRC = ./$(MAINFILE) $(addprefix $(SRCDIR), $(SRCFILES))
 INC = $(addprefix -I, $(INCDIRS))
