@@ -6,10 +6,10 @@
 #include<cstdarg>
 #include<map>
 #include<list>
-#include <type_traits>
+#include<type_traits>
 
-#define DEBUG_MODE_ON 1
-#define DEBUG_MODE_OFF 0
+#include "luahelper.hpp"
+
 #define LUA_OK 0
 #define LUA_FAILED 1
 
@@ -25,16 +25,6 @@ typedef enum luaTypes
 	STRING = 4,
 	BOOLEAN = 5
 }luatype_t;
-
-class Helper
-{
-	private:
-	bool luaDebug = DEBUG_MODE_OFF;
-
-	protected:
-	void setDbgMode(bool onOff);
-	void dbg(const char* str);
-};
 
 typedef std::list<luatype_t> luaTypeList_t;
 
@@ -68,6 +58,10 @@ typedef std::map<std::string, LuaFile*> luaFileNameMap_t;
 typedef std::pair<std::string, LuaFun*> luaFunctionNamePair_t; // Function Name vs Function Instance
 typedef std::map<std::string, LuaFun*> luaFunctionNameMap_t;
 
+/*TODO:
+ * This class can not get a table as function or file return argument, that should be
+ * implemented in the near future. I hope so...
+ */
 class Lua: protected Helper
 {
 	private:
