@@ -1,10 +1,13 @@
 #include "tcp_server.h"
 
+static uint8_t cnt = 0;
+
 static int sockfd;
 static struct sockaddr_in server_addr;
 
 static int new_sockets[NUM_OF_DEVICES];
 static struct sockaddr_in new_addresses[NUM_OF_DEVICES];
+static struct pollfd fds[NUM_OF_DEVICES+1];
 
 uint8_t tcp_server_init(unsigned int port, _logs log)
 {
@@ -58,7 +61,6 @@ uint8_t tcp_server_listen(_logs log)
 
 uint8_t tcp_server_accept(_logs log)
 {
-	static uint8_t cnt = 0;
 	int* new_socket = &new_sockets[cnt];
 	struct sockaddr_in *new_addr = &new_addresses[cnt];
 	socklen_t addr_size = sizeof(new_addr);
@@ -72,17 +74,73 @@ uint8_t tcp_server_accept(_logs log)
 	} else if(log)
 		printf("Client sucessfully accepted. \n");
 
+	cnt++;
+	fds[cnt].fd = *new_sockets;
+	fds[cnt].events = POLLIN;
+
 	return 1;
 }
 
-uint8_t tcp_server_send(char* w_buf)
+ssize_t tcp_server_send(char* w_buf)
 {
 	return send(sockfd, w_buf, strlen(w_buf), 0);
 }
 
-uint8_t tcp_server_recv(char* r_buf)
+ssize_t tcp_server_recv(char* r_buf)
 {
 	return recv(sockfd, r_buf, BUF_SIZE, MSG_DONTWAIT);
+}
+
+void tcp_server_poll(char* r_buf, _logs log)
+{
+	int res;
+
+	fds[0].fd = sockfd;
+	fds[0].events = POLLIN;
+
+	for(;;) {
+		res = poll(fds, NUM_OF_DEVICES, POLL_TIMEOUT);
+
+		if(log && (res < 0)) {
+			printf("Poll failed. \n");
+			continue;
+		} else if (res < 0){
+			continue;
+		} else if (log && (0 == res)) {
+			printf("Poll timeout. \n");
+		}
+
+		for(int i = 0; i < NUM_OF_DEVICES+1; i++) {
+			if (POLLIN != fds[i].revents || 0 == fds[i].revents) {
+				printf("%d %d \n", POLLIN, fds[i].revents);
+				continue;
+			}
+
+			if((fds[i].fd != sockfd)) {
+				res = tcp_server_recv(r_buf);
+
+				if(log && (res < 0)) {
+					printf("Read from socket %d failed", i);
+					close(fds[i].fd);
+					continue;
+				} else if (res < 0) {
+					close(fds[i].fd);
+					continue;
+				}
+
+				if(log && (0 == res)) {
+					printf("Clinet %d closed the connection", cnt);
+					close(fds[i].fd);
+				} else if(0 == res) {
+					close(fds[i].fd);
+				}
+
+				read_callback(r_buf, fds[i].fd, log);
+			} else {
+				//tcp_server_accept(log);
+			}
+		}
+	}
 }
 
 uint8_t tcp_server_close(_logs log)
