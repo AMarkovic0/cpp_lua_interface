@@ -65,34 +65,30 @@ uint8_t tcp_server_listen(_logs log);
 /*
 * Accept clinet connection and assign socket file destriptor
 * In:
-*	int* newSocket_			-> Address for the client connection file destriptor
-*	struct sockaddr_in* new_addr	-> Address of the inet
 *	_logs log			-> stdout log
 * Out:
 *	uint8_t check		-> success notification
 */
-uint8_t tcp_server_accept(int* newSocket_ ,struct sockaddr_in* new_addr, _logs log);
+uint8_t tcp_server_accept(_logs log);
 
 /*
 * Send message to the client. Assumes connection has been established.
 * In:
-*	int sockfd	-> Clients socket file descriptor
 *	char* w_buf	-> Message buffer pointer
 * Out:
 *	uint8_t check	-> success notification
 */
-uint8_t tcp_server_send(int sockfd, char* w_buf);
+uint8_t tcp_server_send(char* w_buf);
 
 /*
 * Reads client message and puts the message in the buffer.
 * Assumes connection has been established.
 * In:
-*	int sockfd	-> Clients socket file descriptor
 *	char* r_buf	-> Message buffer pointer
 * Out:
 *	uint8_t check	-> success notification
 */
-uint8_t tcp_server_recv(int sockfd, char* r_buf);
+uint8_t tcp_server_recv(char* r_buf);
 
 /*
 * Gets and writes server IP address in the IPaddr buffer

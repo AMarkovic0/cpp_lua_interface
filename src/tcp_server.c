@@ -63,16 +63,19 @@ uint8_t tcp_server_listen(_logs log) {
 	return 1;
 }
 
-uint8_t tcp_server_accept(int* newSocket, struct sockaddr_in* new_addr, _logs log) {
+uint8_t tcp_server_accept(_logs log) {
+	static uint8_t cnt = 0;
+	int* new_socket = &new_sockets[cnt];
+	struct sockaddr_in *new_addr = &new_addresses[cnt];
 	socklen_t addr_size = sizeof(new_addr);
 
-	*newSocket = accept(sockfd, (struct sockaddr*)new_addr, &addr_size);
-	if((*newSocket < 0) && log)
+	*new_socket = accept(sockfd, (struct sockaddr*)new_addr, &addr_size);
+	if((*new_socket < 0) && log)
 	{
 		printf("Acception failed. \r\n");
 		return -1;
 	}
-	else if((*newSocket < 0) && !log)
+	else if((*new_socket < 0) && !log)
 	{
 		return -1;
 	}
@@ -82,11 +85,11 @@ uint8_t tcp_server_accept(int* newSocket, struct sockaddr_in* new_addr, _logs lo
 	return 1;
 }
 
-uint8_t tcp_server_send(int sockfd, char* w_buf) {
+uint8_t tcp_server_send(char* w_buf) {
 	return send(sockfd, w_buf, strlen(w_buf), 0);
 }
 
-uint8_t tcp_server_recv(int sockfd, char* r_buf) {
+uint8_t tcp_server_recv(char* r_buf) {
 	return recv(sockfd, r_buf, BUF_SIZE, MSG_DONTWAIT);
 }
 
