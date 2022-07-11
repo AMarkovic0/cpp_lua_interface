@@ -16,17 +16,13 @@ uint8_t tcp_server_init(unsigned int port, _logs log)
 	getIP(ip, log);
 
 	sockfd = socket(PF_INET , SOCK_STREAM , 0);
-	if(log && (-1 == sockfd))
-	{
-		printf("Socket creation failed. \r\n");
+	if(log && (-1 == sockfd)) {
+		printf("Socket creation failed. \n");
 		return -1;
-	}
-	else if(!log && (-1 == sockfd))
-	{
+	} else if(!log && (-1 == sockfd)) {
 		return -1;
-	}
-	else if( log )
-		printf( "Socket creation sucessfull. \r\n");
+	} else if( log )
+		printf( "Socket creation sucessfull. \n");
 
 	memset(&server_addr, '\0', sizeof(server_addr));
 
@@ -35,17 +31,13 @@ uint8_t tcp_server_init(unsigned int port, _logs log)
 	server_addr.sin_addr.s_addr = inet_addr(ip);
 
 	check_var = bind(sockfd, (struct sockaddr*)&server_addr , sizeof(server_addr));
-	if(check_var && log)
-	{
-		printf("Bind failed %d. \r\n", errno);
+	if(check_var && log) {
+		printf("Bind failed %d. \n", errno);
 		return -1;
-	}
-	else if(check_var && !log)
-	{
+	} else if(check_var && !log) {
 		return -1;
-	}
-	else if(!check_var && log)
-		printf("Bind sucessfull \r\n");
+	} else if(!check_var && log)
+		printf("Bind sucessfull \n");
 
 	return -1;
 }
@@ -53,17 +45,13 @@ uint8_t tcp_server_init(unsigned int port, _logs log)
 uint8_t tcp_server_listen(_logs log)
 {
 	uint8_t check = listen(sockfd, NUM_OF_DEVICES);
-	if(check && log)
-	{
-		printf("Listen failed. \r\n");
+	if(check && log) {
+		printf("Listen failed. \n");
 		return -1;
-	}
-	else if(check && !log)
-	{
+	} else if(check && !log) {
 		return -1;
-	}
-	else if(!check && log)
-		printf("Server listening... \r\n");
+	} else if(!check && log)
+		printf("Server listening... \n");
 
 	return 1;
 }
@@ -76,17 +64,13 @@ uint8_t tcp_server_accept(_logs log)
 	socklen_t addr_size = sizeof(new_addr);
 
 	*new_socket = accept(sockfd, (struct sockaddr*)new_addr, &addr_size);
-	if((*new_socket < 0) && log)
-	{
-		printf("Acception failed. \r\n");
+	if((*new_socket < 0) && log) {
+		printf("Acception failed. \n");
 		return -1;
-	}
-	else if((*new_socket < 0) && !log)
-	{
+	} else if((*new_socket < 0) && !log) {
 		return -1;
-	}
-	else if(log)
-		printf("Client sucessfully accepted. \r\n");
+	} else if(log)
+		printf("Client sucessfully accepted. \n");
 
 	return 1;
 }
@@ -99,6 +83,17 @@ uint8_t tcp_server_send(char* w_buf)
 uint8_t tcp_server_recv(char* r_buf)
 {
 	return recv(sockfd, r_buf, BUF_SIZE, MSG_DONTWAIT);
+}
+
+uint8_t tcp_server_close(_logs log)
+{
+	int res = close(sockfd);
+	if(log && (-1 == res)) {
+		printf("Socket closing failed. \n");
+	} else if(log) {
+		printf("Socket closing successful \n");
+	}
+	return res;
 }
 
 void getIP(char* IPaddr, _logs log)
