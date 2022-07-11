@@ -6,7 +6,8 @@ static struct sockaddr_in server_addr;
 static int new_sockets[NUM_OF_DEVICES];
 static struct sockaddr_in new_addresses[NUM_OF_DEVICES];
 
-uint8_t tcp_server_init(unsigned int port, _logs log) {
+uint8_t tcp_server_init(unsigned int port, _logs log)
+{
 	char ip[MAX_IP_SIZE];
 	uint8_t check_var = 0;
 
@@ -49,7 +50,8 @@ uint8_t tcp_server_init(unsigned int port, _logs log) {
 	return -1;
 }
 
-uint8_t tcp_server_listen(_logs log) {
+uint8_t tcp_server_listen(_logs log)
+{
 	uint8_t check = listen(sockfd, NUM_OF_DEVICES);
 	if(check && log)
 	{
@@ -66,7 +68,8 @@ uint8_t tcp_server_listen(_logs log) {
 	return 1;
 }
 
-uint8_t tcp_server_accept(_logs log) {
+uint8_t tcp_server_accept(_logs log)
+{
 	static uint8_t cnt = 0;
 	int* new_socket = &new_sockets[cnt];
 	struct sockaddr_in *new_addr = &new_addresses[cnt];
@@ -88,15 +91,18 @@ uint8_t tcp_server_accept(_logs log) {
 	return 1;
 }
 
-uint8_t tcp_server_send(char* w_buf) {
+uint8_t tcp_server_send(char* w_buf)
+{
 	return send(sockfd, w_buf, strlen(w_buf), 0);
 }
 
-uint8_t tcp_server_recv(char* r_buf) {
+uint8_t tcp_server_recv(char* r_buf)
+{
 	return recv(sockfd, r_buf, BUF_SIZE, MSG_DONTWAIT);
 }
 
-void getIP(char* IPaddr, _logs log) {
+void getIP(char* IPaddr, _logs log)
+{
 	int fd;
 	struct ifreq ifr;
 
