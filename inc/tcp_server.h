@@ -28,11 +28,13 @@
 #include<net/if.h>
 #include<sys/ioctl.h>
 #include<netdb.h>
+#include<poll.h>
 
 #define MAX_IP_SIZE 15		// Size of the IPv4 address
 #define BUF_SIZE 255		// Buffer size
 #define WIFI_INTERFACE "wlp2s0" // Network interface
 #define NUM_OF_DEVICES 10	// Max clients
+#define POLL_TIMEOUT 1500	// [ms]
 
 
 // Enum that allows or restricts logging on stdout
@@ -75,9 +77,9 @@ uint8_t tcp_server_accept(_logs log);
 * In:
 *	char* w_buf	-> Message buffer pointer
 * Out:
-*	uint8_t check	-> success notification
+*	ssize_t res	-> number of bytes sent
 */
-uint8_t tcp_server_send(char* w_buf);
+ssize_t tcp_server_send(char* w_buf);
 
 /*
 * Reads client message and puts the message in the buffer.
@@ -85,9 +87,26 @@ uint8_t tcp_server_send(char* w_buf);
 * In:
 *	char* r_buf	-> Message buffer pointer
 * Out:
-*	uint8_t check	-> success notification
+*	ssize_t ret	-> number of bytes received
 */
-uint8_t tcp_server_recv(char* r_buf);
+ssize_t tcp_server_recv(char* r_buf);
+
+/*
+ * Polling function
+ * In:
+ * 	char* r_buf	-> Read buffer
+ * 	_logs log	-> stdout log
+*/
+void tcp_server_poll(char* r_buf, _logs log);
+
+/* Function declaration - reading callback
+ * Must be implemented
+ * In:
+ * 	char* r_buf	-> read buffer
+ * 	int fd		-> socket file descriptor
+ * 	_logs log	-> stdout log
+*/
+void read_callback(char* r_buf, int fd, _logs log);
 
 /*
  * Closes the server
