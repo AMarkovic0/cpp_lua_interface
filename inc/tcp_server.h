@@ -44,13 +44,12 @@ typedef enum logging {
 /*
 * This function initializes and binds a TCP server
 * In:
-*	char* ip		-> server IP address
 *	unsigned int port 	-> Port number
 *	_logs log		-> stdout log
 * Out:
 *	uint8_t check		-> success notification
 */
-uint8_t tcp_server_init(char* ip, unsigned int port, _logs log);
+uint8_t tcp_server_init(unsigned int port, _logs log);
 
 /*
 * Starts server listening

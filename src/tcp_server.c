@@ -6,10 +6,13 @@ static struct sockaddr_in server_addr;
 static int new_sockets[NUM_OF_DEVICES];
 static struct sockaddr_in new_addresses[NUM_OF_DEVICES];
 
-uint8_t tcp_server_init(char* ip, unsigned int port, _logs log) {
+uint8_t tcp_server_init(unsigned int port, _logs log) {
+	char ip[MAX_IP_SIZE];
 	uint8_t check_var = 0;
 
 	signal(SIGPIPE , SIG_IGN); // block SIGPIPE signal in case client disconnect
+
+	getIP(ip, log);
 
 	sockfd = socket(PF_INET , SOCK_STREAM , 0);
 	if(log && (-1 == sockfd))
