@@ -64,7 +64,7 @@ uint8_t tcp_server_listen(_logs log);
 /*
 * Accept clinet connection and assign socket file destriptor
 * In:
-*	_logs log			-> stdout log
+*	_logs log		-> stdout log
 * Out:
 *	uint8_t check		-> success notification
 */
@@ -88,6 +88,15 @@ uint8_t tcp_server_send(char* w_buf);
 *	uint8_t check	-> success notification
 */
 uint8_t tcp_server_recv(char* r_buf);
+
+/*
+ * Closes the server
+ * In:
+ * 	_logs log	-> stdout log
+ * Out:
+ * 	uint8_t 	-> success notification
+*/
+uint8_t tcp_server_close(_logs log);
 
 /*
 * Gets and writes server IP address in the IPaddr buffer
