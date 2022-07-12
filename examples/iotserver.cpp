@@ -2,6 +2,7 @@
 #include "luaclass.hpp"
 
 #define PORT 54321u
+#define LUA_FD 1
 #define NUM_OF_LUA_STACKS 10
 #define LUA_FILE_NAME "handler.lua"
 #define LUA_RECEIVED_FROM_NETWORK "ReceivedFromNetwork"
