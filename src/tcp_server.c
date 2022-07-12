@@ -81,12 +81,12 @@ uint8_t tcp_server_accept(_logs log)
 	return 1;
 }
 
-ssize_t tcp_server_send(char* w_buf)
+ssize_t tcp_server_send(int sockfd, char* w_buf)
 {
 	return send(sockfd, w_buf, strlen(w_buf), 0);
 }
 
-ssize_t tcp_server_recv(char* r_buf)
+ssize_t tcp_server_recv(int sockfd, char* r_buf)
 {
 	return recv(sockfd, r_buf, BUF_SIZE, MSG_DONTWAIT);
 }
@@ -115,7 +115,7 @@ void tcp_server_poll(char* r_buf, _logs log)
 				continue;
 
 			if((fds[i].fd != sockfd)) {
-				res = tcp_server_recv(r_buf);
+				res = tcp_server_recv(fds[i].fd, r_buf);
 
 				if(log && (res < 0)) {
 					printf("Read from socket %d failed", i);

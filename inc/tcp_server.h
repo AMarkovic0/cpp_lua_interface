@@ -79,21 +79,23 @@ uint8_t tcp_server_accept(_logs log);
 /*
 * Send message to the client. Assumes connection has been established.
 * In:
+* 	int sockfd	-> socket file descriptor
 *	char* w_buf	-> Message buffer pointer
 * Out:
 *	ssize_t res	-> number of bytes sent
 */
-ssize_t tcp_server_send(char* w_buf);
+ssize_t tcp_server_send(int sockfd, char* w_buf);
 
 /*
 * Reads client message and puts the message in the buffer.
 * Assumes connection has been established.
 * In:
+* 	int sockfd	-> socket file descriptor
 *	char* r_buf	-> Message buffer pointer
 * Out:
 *	ssize_t ret	-> number of bytes received
 */
-ssize_t tcp_server_recv(char* r_buf);
+ssize_t tcp_server_recv(int sockfd, char* r_buf);
 
 /*
  * Polling function
