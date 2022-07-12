@@ -13,7 +13,6 @@ int main(int argc, char *argv[])
 	tcp_server_listen(LOG_ON);
 
 	pthread_create(&thread_id, NULL, &connection_handler, NULL);
-	tcp_server_accept(LOG_ON);
 
 	pthread_join(thread_id, NULL);
 
