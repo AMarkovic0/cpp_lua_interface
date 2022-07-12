@@ -12,6 +12,10 @@
 #ifndef _TCP_SERVER_H_
 #define _TCP_SERVER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -124,5 +128,9 @@ uint8_t tcp_server_close(_logs log);
 *	_logs log	-> stdout log
 */
 void getIP(char* IPaddr, _logs log);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _TCP_SERVER_H_
