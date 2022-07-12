@@ -61,18 +61,18 @@ uint8_t tcp_server_listen(_logs log)
 
 uint8_t tcp_server_accept(_logs log)
 {
-	int* new_socket = &new_sockets[cnt];
+	int *new_socket = &new_sockets[cnt];
 	struct sockaddr_in *new_addr = &new_addresses[cnt];
-	socklen_t addr_size = sizeof(new_addr);
+	socklen_t addr_size = sizeof(*new_addr);
 
 	*new_socket = accept(sockfd, (struct sockaddr*)new_addr, &addr_size);
 	if((*new_socket < 0) && log) {
 		printf("Acception failed. \n");
-		return -1;
+		return *new_socket;
 	} else if((*new_socket < 0) && !log) {
-		return -1;
+		return *new_socket;
 	} else if(log)
-		printf("Client sucessfully accepted. \n");
+		printf("Client %d sucessfully accepted. \n", cnt);
 
 	cnt++;
 	fds[cnt].fd = *new_socket;
@@ -91,9 +91,29 @@ ssize_t tcp_server_recv(int sockfd, char* r_buf)
 	return recv(sockfd, r_buf, BUF_SIZE, MSG_DONTWAIT);
 }
 
+static uint8_t _check_recv(int res, _logs log)
+{
+	if(log && (res < 0) && (errno != EWOULDBLOCK)) {
+		printf("Read from connection %d failed. \n", cnt);
+		return 1;
+	} else if ((res < 0) && (errno != EWOULDBLOCK)) {
+		return 1;
+	}
+
+	if(log && (0 == res)) {
+		printf("Clinet %d closed the connection. \n", cnt);
+		return 2;
+	} else if(0 == res) {
+		return 2;
+	}
+
+	return 0;
+}
+
 void tcp_server_poll(char* r_buf, _logs log)
 {
 	int res;
+	int close_connection = 0;
 
 	fds[0].fd = sockfd;
 	fds[0].events = POLLIN;
@@ -117,26 +137,22 @@ void tcp_server_poll(char* r_buf, _logs log)
 			if((fds[i].fd != sockfd)) {
 				res = tcp_server_recv(fds[i].fd, r_buf);
 
-				if(log && (res < 0)) {
-					printf("Read from socket %d failed", i);
-					close(fds[i].fd);
-					continue;
-				} else if (res < 0) {
-					close(fds[i].fd);
-					continue;
-				}
-
-				if(log && (0 == res)) {
-					printf("Clinet %d closed the connection", cnt);
-					close(fds[i].fd);
-				} else if(0 == res) {
-					close(fds[i].fd);
+				close_connection = _check_recv(res, log);
+				if(close_connection != 0) {
+					close_connection = i;
+					break;
 				}
 
 				read_callback(r_buf, fds[i].fd, log);
 			} else {
 				tcp_server_accept(log);
 			}
+		}
+
+		if(close_connection != 0) {
+			close(fds[close_connection].fd);
+			fds[close_connection].revents = 0;
+			close_connection = 0;
 		}
 	}
 }
