@@ -75,7 +75,7 @@ uint8_t tcp_server_accept(_logs log)
 		printf("Client sucessfully accepted. \n");
 
 	cnt++;
-	fds[cnt].fd = *new_sockets;
+	fds[cnt].fd = *new_socket;
 	fds[cnt].events = POLLIN;
 
 	return 1;
@@ -111,10 +111,8 @@ void tcp_server_poll(char* r_buf, _logs log)
 		}
 
 		for(int i = 0; i < NUM_OF_DEVICES+1; i++) {
-			if (POLLIN != fds[i].revents || 0 == fds[i].revents) {
-				printf("%d %d \n", POLLIN, fds[i].revents);
+			if (POLLIN != fds[i].revents || 0 == fds[i].revents)
 				continue;
-			}
 
 			if((fds[i].fd != sockfd)) {
 				res = tcp_server_recv(r_buf);
@@ -137,7 +135,7 @@ void tcp_server_poll(char* r_buf, _logs log)
 
 				read_callback(r_buf, fds[i].fd, log);
 			} else {
-				//tcp_server_accept(log);
+				tcp_server_accept(log);
 			}
 		}
 	}
