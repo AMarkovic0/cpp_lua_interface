@@ -284,6 +284,7 @@ void Lua::_setVar(std::va_list& valist, luatype_t type)
 	}
 	if(type == STRING)
 	{
+		lua_pushstring(L, va_arg(valist, std::string).c_str());
 		return;
 	}
 	if(type == BOOLEAN)
