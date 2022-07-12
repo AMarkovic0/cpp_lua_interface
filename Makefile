@@ -1,17 +1,17 @@
 CC = g++
 TARGET = main
-MAINFILE = test.cpp
+MAINFILE = iotserver.cpp
 
 SRCDIR = ./src/
 INCDIRS = /usr/include/lua5.1 ./inc/
 LIBDIRS = /usr/bin/
 
-SRCFILES = luaclass.cpp luahelper.cpp
+SRCFILES = luaclass.cpp luahelper.cpp tcp_server.c
 
 SRC = ./$(MAINFILE) $(addprefix $(SRCDIR), $(SRCFILES))
 INC = $(addprefix -I, $(INCDIRS))
 LIB = $(addprefix -L, $(LIBDIRS))
-LINK = -llua5.1
+LINK = -llua5.1 -lpthread
 
 CFLAGS = $(LIB) $(INC) $(LINK)
 
