@@ -64,6 +64,7 @@ uint8_t tcp_server_accept(_logs log)
 	int *new_socket = &new_sockets[cnt];
 	struct sockaddr_in *new_addr = &new_addresses[cnt];
 	socklen_t addr_size = sizeof(*new_addr);
+	cnt++;
 
 	*new_socket = accept(sockfd, (struct sockaddr*)new_addr, &addr_size);
 	if((*new_socket < 0) && log) {
@@ -74,7 +75,6 @@ uint8_t tcp_server_accept(_logs log)
 	} else if(log)
 		printf("Client %d sucessfully accepted. \n", cnt);
 
-	cnt++;
 	fds[cnt].fd = *new_socket;
 	fds[cnt].events = POLLIN;
 
@@ -138,7 +138,7 @@ void tcp_server_poll(char* r_buf, _logs log)
 				res = tcp_server_recv(fds[i].fd, r_buf);
 
 				close_connection = _check_recv(res, log);
-				if(close_connection != 0) {
+				if(0 != close_connection) {
 					close_connection = i;
 					break;
 				}
@@ -153,6 +153,7 @@ void tcp_server_poll(char* r_buf, _logs log)
 			close(fds[close_connection].fd);
 			fds[close_connection].revents = 0;
 			close_connection = 0;
+			cnt--;
 		}
 	}
 }
