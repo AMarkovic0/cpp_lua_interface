@@ -1,12 +1,12 @@
 CC = g++
 TARGET = main
-MAINFILE = ./examples/iotserver.cpp
+MAINFILE = ./main.cpp
 
 SRCDIR = ./src/
 INCDIRS = /usr/include/lua5.1 ./inc/
 LIBDIRS = /usr/bin/
 
-SRCFILES = luaclass.cpp luahelper.cpp tcp_server.c
+SRCFILES = luaclass.cpp luahelper.cpp tcp_server.c luafuns.cpp log.c
 
 SRC = ./$(MAINFILE) $(addprefix $(SRCDIR), $(SRCFILES))
 INC = $(addprefix -I, $(INCDIRS))
