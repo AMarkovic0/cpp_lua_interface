@@ -1,6 +1,6 @@
 #include "luaclass.hpp"
 
-#define LUA_FILE "test.lua"
+#define LUA_FILE "lua/test.lua"
 #define LUA_FUNCTION_NAME "addLua"
 #define TEST_VAR1 "var1"
 #define TEST_VAR2 "var2"
