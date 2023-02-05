@@ -1,5 +1,6 @@
 CC = g++
 TARGET = main
+LIB_TARGET = libluainterface.a
 MAINFILE_TEST = ./examples/test.cpp
 
 SRCDIR = ./src/
@@ -24,5 +25,12 @@ run:
 	./$(TARGET)
 
 clean:
-	rm ./$(TARGET)
+	rm -f ./*.o
+	rm -f ./*.a
+	rm -f ./$(TARGET)
+
+lib:
+	$(CC) -c $(addprefix $(SRCDIR), $(SRCFILES)) $(CFLAGS)
+	ar rvs $(LIB_TARGET) *.o
+	rm ./*.o
 
