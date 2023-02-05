@@ -15,6 +15,8 @@ you can follow some Lua 5.1 installation guide on the internet.
 If compilig the test, pay attention to Lua C PAI paths in the Makefile. If your path deffers,
 please change the path.
 
+To build a static library from this repor execute make lib.
+
 ## How to use
 
 This chapter shortly explains how to use the library.
