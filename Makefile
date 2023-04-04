@@ -18,6 +18,8 @@ LINK = -llua5.1
 
 CFLAGS = $(LIB) $(INC) $(LINK)
 
+.PHONY: clean run
+
 all:
 	$(CC) -o $(TARGET) $(SRC_TEST) $(CFLAGS)
 
@@ -33,4 +35,3 @@ lib:
 	$(CC) -c $(addprefix $(SRCDIR), $(SRCFILES)) $(CFLAGS)
 	ar rvs $(LIB_TARGET) *.o
 	rm ./*.o
-
